@@ -1,0 +1,51 @@
+[
+    {
+      "id": 1,
+      "title": "Creative Learning in Action",
+      "image": "https://i.ibb.co.com/SwH1Sm54/story-1.png",
+      "description": "Students engaging in hands-on activities that nurture creativity and imagination."
+    },
+    {
+      "id": 2,
+      "title": "Exploring Through Play",
+      "image": "https://i.ibb.co.com/6703jcnR/story-2.png",
+      "description": "Play-based learning fosters social and motor skills in a joyful setting."
+    },
+    {
+      "id": 3,
+      "title": "Celebrating Curiosity",
+      "image": "https://i.ibb.co.com/Rmx2yrz/story-3.png",
+      "description": "A vibrant classroom where curiosity is celebrated and questions are encouraged."
+    },
+    {
+      "id": 4,
+      "title": "Together We Grow",
+      "image": "https://i.ibb.co.com/mFNbwbBW/story-4.png",
+      "description": "Children learning and sharing experiences in a collaborative environment."
+    },
+    {
+      "id": 5,
+      "title": "Learning with Joy",
+      "image": "https://i.ibb.co.com/LXB2ZtqP/story-5.png",
+      "description": "Smiles and laughter reflect the joyful learning culture of our school."
+    },
+    {
+      "id": 6,
+      "title": "A Safe Space to Thrive",
+      "image": "https://i.ibb.co.com/hFKNxn2Z/image.png",
+      "description": "Our campus provides a secure and welcoming atmosphere for every child."
+    },
+    {
+      "id": 7,
+      "title": "Fun Meets Education",
+      "image": "https://i.ibb.co.com/SXS7Pc1P/image.png",
+      "description": "Innovative activities that make education exciting and fun-filled."
+    },
+    {
+      "id": 8,
+      "title": "Future Leaders in the Making",
+      "image": "https://i.ibb.co.com/xS42R3LG/image.png",
+      "description": "Empowering children with confidence, knowledge, and compassion."
+    }
+  ]
+  
