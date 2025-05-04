@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "name": "Md Ebrahim",
+    "position": "Principal",
+    "phone": "01782345678",
+    "image": "https://i.ibb.co.com/twDdG4zB/Whats-App-Image-2025-05-03-at-17-53-51-2a00d0a0.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Khayrul Alam",
+    "position": "Vice Principal",
+    "phone": "01911234567",
+    "image": "https://i.ibb.co.com/4wCqwg30/Whats-App-Image-2025-05-03-at-17-54-53-65b96628.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Shakil Rahman",
+    "position": "Faculty",
+    "phone": "01894561234",
+    "image": "https://i.ibb.co.com/Kx47NNK6/image.png"
+  },
+  {
+    "id": 4,
+    "name": "Raihan Ahmed",
+    "position": "Science Teacher",
+    "phone": "01676549812",
+    "image": "https://i.ibb.co.com/5bFkFCj/image.png"
+  },
+  {
+    "id": 5,
+    "name": "Nayeem Hossain",
+    "position": "Math Teacher",
+    "phone": "01322458796",
+    "image": "https://i.ibb.co.com/ZRvtnbVC/image.png"
+  },
+  {
+    "id": 6,
+    "name": "Sumaiya Khatun",
+    "position": "English Teacher",
+    "phone": "01498762315",
+    "image": "https://i.ibb.co.com/gMZgfTBJ/image.png"
+  }
+]

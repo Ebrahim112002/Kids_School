@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link, NavLink, useLocation } from 'react-router';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 
 const Navbar = () => {
 
+  const navigate = useNavigate();
   const location = useLocation();
 
   const getActive = (path, inactiveColor) => {
@@ -46,7 +47,11 @@ const Navbar = () => {
     {links}
     </ul>
   </div>
-  <div className="navbar-end">
+  <div 
+  onClick={()=>{
+    navigate("/facilities")
+  }}
+  className="navbar-end">
     <a className="btn btn-lg bg-[rgb(254,163,1)] text-white text-xl">Contact </a>
   </div>
 </div>

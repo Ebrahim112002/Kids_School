@@ -25,6 +25,7 @@ export const router = createBrowserRouter([
     },
     {
       path:"/facilities",
+      loader:()=> fetch("/public/teacher.json"),
       Component:Facilities
     },
     {

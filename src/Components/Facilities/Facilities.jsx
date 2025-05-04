@@ -1,6 +1,15 @@
 import React from 'react';
+import { useLoaderData } from 'react-router';
+import Teachers from './Teachers';
 
 const Facilities = () => {
+    
+  const data = useLoaderData();
+
+  console.log(data)
+
+
+
   return (
     <div className="w-[90%] mx-auto my-10">
       <section
@@ -46,6 +55,20 @@ const Facilities = () => {
             </button>
           </div>
         </div>
+      </section>
+{/* Teacher card  */}
+
+      <section className='bg-blue-50 p-20 items-center rounded-2xl'>
+
+        <h1 className='text-center my-10 font-bold text-5xl'>
+          For any Information Contact us
+        </h1>
+       <div className='grid grid-cols-3 gap-5'>
+        {
+          data.map(teacher=><Teachers key={teacher.id} teacher={teacher}></Teachers>)
+        }
+       </div>
+
       </section>
     </div>
   );
