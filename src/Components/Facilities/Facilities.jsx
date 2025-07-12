@@ -1,12 +1,13 @@
 import React from 'react';
-import { useLoaderData } from 'react-router';
-import Teachers from './Teachers';
+import { Link } from 'react-router';
+
+
 
 const Facilities = () => {
-    
-  const data = useLoaderData();
 
-  console.log(data)
+
+
+
 
 
 
@@ -30,46 +31,37 @@ const Facilities = () => {
 
           <div className="space-y-6 max-w-4xl">
             <p className="bg-white/40 backdrop-blur-md p-5 rounded-lg text-lg md:text-xl leading-relaxed shadow-lg transition-all duration-300 hover:scale-105">
-              At our school, we believe the right environment sparks curiosity and unlocks potential. 
+              At our school, we believe the right environment sparks curiosity and unlocks potential.
               Our modern infrastructure is built to support learning and innovation at every level.
             </p>
 
             <p className="bg-white/40 backdrop-blur-md p-5 rounded-lg text-lg md:text-xl leading-relaxed shadow-lg transition-all duration-300 hover:scale-105">
-              Interactive classrooms, high-tech computer labs, and a rich library foster a love for 
+              Interactive classrooms, high-tech computer labs, and a rich library foster a love for
               discovery. Outdoor playgrounds, sports courts, and creative spaces provide balance through movement and play.
             </p>
 
             <p className="bg-white/40 backdrop-blur-md p-5 rounded-lg text-lg md:text-xl leading-relaxed shadow-lg transition-all duration-300 hover:scale-105">
-              We ensure a safe and nurturing environment with surveillance, medical facilities, and wellness support. 
+              We ensure a safe and nurturing environment with surveillance, medical facilities, and wellness support.
               Our campus also reflects environmental responsibility, with solar power, greenery, and rainwater harvesting systems.
             </p>
           </div>
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-10">
+           <Link to='/contact'>
             <button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-md text-lg">
-              View Gallery
+              Contact us
             </button>
-            <button className="bg-green-600 hover:bg-green-700 text-white py-3 px-8 rounded-lg shadow-md text-lg">
+           </Link>
+            {/* <button className="bg-green-600 hover:bg-green-700 text-white py-3 px-8 rounded-lg shadow-md text-lg">
               Take a Tour
-            </button>
+            </button> */}
           </div>
         </div>
       </section>
-{/* Teacher card  */}
 
-      <section className='bg-blue-50 p-20 items-center rounded-2xl'>
 
-        <h1 className='text-center my-10 font-bold text-5xl'>
-          For any Information Contact us
-        </h1>
-       <div className='grid grid-cols-3 gap-5'>
-        {
-          data.map(teacher=><Teachers key={teacher.id} teacher={teacher}></Teachers>)
-        }
-       </div>
 
-      </section>
     </div>
   );
 };

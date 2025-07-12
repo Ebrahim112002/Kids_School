@@ -1,0 +1,29 @@
+.marquee-container {
+  overflow: hidden;
+  height: 400px;
+  position: relative;
+}
+
+.marquee-track {
+  display: flex;
+  width: calc(600px * 8); /* 4 images x 2 loops */
+  animation: scroll-marquee 40s linear infinite;
+}
+
+.marquee-image {
+  width: 600px;
+  height: 100%;
+  object-fit: cover;
+  margin-right: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes scroll-marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
