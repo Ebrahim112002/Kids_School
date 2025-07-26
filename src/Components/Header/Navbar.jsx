@@ -1,20 +1,34 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FiChevronDown } from 'react-icons/fi';
 import { Authcontext } from '../../Script/Authcontext/Authcontext';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const MySwal = withReactContent(Swal);
 
 const Navbar = () => {
   const { user, logOut } = useContext(Authcontext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isAdmissionOpen, setIsAdmissionOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [dbUser, setDbUser] = useState(null);
 
-  // Close dropdown when clicking outside
+  // Fetch full user (with role) from backend using email
+  useEffect(() => {
+    if (user?.email) {
+      fetch(`http://localhost:3000/users?email=${user.email}`)
+        .then((res) => res.json())
+        .then((data) => setDbUser(data))
+        .catch((err) => console.error('Error fetching user role:', err));
+    }
+  }, [user?.email]);
+
+  // Hide dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsDropdownOpen(false);
+        setIsAdmissionOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -27,14 +41,27 @@ const Navbar = () => {
       : `${color} font-semibold text-lg hover:bg-gray-100 px-4 py-2 rounded transition`;
   };
 
-  const handleLogout = () => {
-    logOut()
-      .then(() => {
-        navigate('/');
-      })
-      .catch((err) => {
-        console.error('Logout Error:', err);
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      await MySwal.fire({
+        title: 'Logged Out!',
+        text: 'You have been successfully logged out.',
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK',
       });
+      navigate('/');
+      window.location.reload(); // Refresh the page after navigating to homepage
+    } catch (err) {
+      console.error('Logout Error:', err);
+      await MySwal.fire({
+        title: 'Error!',
+        text: 'Failed to log out. Please try again.',
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+      });
+    }
   };
 
   const links = (
@@ -42,20 +69,46 @@ const Navbar = () => {
       <Link to="/" className={getActive('/', 'text-[rgb(254,163,1)]')}>Home</Link>
       <Link to="/about" className={getActive('/about', 'text-[rgb(93,88,239)]')}>About</Link>
       <Link to="/facilities" className={getActive('/facilities', 'text-[rgb(5,212,223)]')}>Facilities</Link>
-      <Link to="/admission" className={getActive('/admission', 'text-[rgb(1,172,253)]')}>Registration</Link>
 
-      {user && (
+      {/* Admission Dropdown */}
+      <div
+        className="relative group"
+        ref={dropdownRef}
+        onMouseEnter={() => setIsAdmissionOpen(true)}
+        onMouseLeave={() => setIsAdmissionOpen(false)}
+      >
+        <button
+          onClick={() => setIsAdmissionOpen(prev => !prev)}
+          className={`${getActive('/admission', 'text-[rgb(1,172,253)]')} flex items-center gap-1`}
+        >
+          Admission ▾
+        </button>
+        <div
+          className={`absolute top-full mt-1 w-40 bg-white border border-gray-200 rounded shadow-lg z-50 transition-all duration-200 origin-top
+          ${isAdmissionOpen ? 'opacity-100 visible scale-100' : 'opacity-0 invisible scale-95'}`}
+        >
+          <Link to="/admission" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Admission Form</Link>
+          <Link to="/admissionInfo" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Admission Info</Link>
+        </div>
+      </div>
+
+      {/* Dashboard link based on role from backend */}
+      {user && dbUser?.role === 'student' ? (
         <Link to="/StuDashboard" className={getActive('/StuDashboard', 'text-green-600')}>
+          Student Dashboard
+        </Link>
+      ) : dbUser?.role ? (
+        <Link to="/Dashboard" className={getActive('/Dashboard', 'text-green-600')}>
           Dashboard
         </Link>
-      )}
+      ) : null}
     </>
   );
 
   return (
     <div className="mx-auto mt-5">
       <div className="navbar bg-base-100 shadow-md px-18 py-4 rounded-2xl transition-all duration-300">
-        {/* Logo and Mobile Menu */}
+        {/* Mobile Menu */}
         <div className="navbar-start">
           <div className="dropdown lg:hidden">
             <button tabIndex={0} className="btn btn-ghost">
@@ -83,7 +136,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Side Buttons */}
-        <div className="navbar-end flex gap-3 relative" ref={dropdownRef}>
+        <div className="navbar-end flex gap-3">
           {user ? (
             <button
               onClick={handleLogout}
@@ -92,25 +145,17 @@ const Navbar = () => {
               Logout
             </button>
           ) : (
-            <div className="relative">
-              <button
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="btn btn-lg bg-[rgb(254,163,1)] text-white text-xl flex items-center gap-2 shadow-md hover:shadow-lg transition"
-              >
-                Login
-                <FiChevronDown
-                  className={`transform transition duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
-
-              {/* Animated Dropdown */}
-              <div className={`absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-50 transform transition-all duration-300 origin-top ${
-                isDropdownOpen ? 'scale-100 opacity-100 visible' : 'scale-95 opacity-0 invisible'
-              }`}>
-                <button onClick={() => navigate("/login/admin")} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition">Admin Login</button>
-                <button onClick={() => navigate("/login/teacher")} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition">Teacher Login</button>
-                <button onClick={() => navigate("/login/student")} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-100 transition">Student Login</button>
-              </div>
+            <div className="flex gap-5">
+              <Link to="/login">
+                <button className="btn btn-lg bg-[rgb(254,163,1)] text-white text-xl shadow-md hover:shadow-lg transition">
+                  Login
+                </button>
+              </Link>
+              <Link to="/register">
+                <button className="btn btn-lg bg-[rgb(254,163,1)] text-white text-xl shadow-md hover:shadow-lg transition">
+                  Register
+                </button>
+              </Link>
             </div>
           )}
         </div>
