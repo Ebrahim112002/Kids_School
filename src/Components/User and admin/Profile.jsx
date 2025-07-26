@@ -21,11 +21,11 @@ const Profile = () => {
                 // Determine which endpoint to call based on user role
                 let endpoint = '';
                 if (user.role === 'teacher') {
-                    endpoint = `http://localhost:3000/users?email=${user.email}`;
+                    endpoint = `https://sc-hool-server.vercel.app/users?email=${user.email}`;
                 } else if (user.role === 'admin') {
-                    endpoint = `http://localhost:3000/users?email=${user.email}`;
+                    endpoint = `https://sc-hool-server.vercel.app/users?email=${user.email}`;
                 } else {
-                    endpoint = `http://localhost:3000/users?email=${user.email}`;
+                    endpoint = `https://sc-hool-server.vercel.app/users?email=${user.email}`;
                 }
 
                 const response = await fetch(endpoint);

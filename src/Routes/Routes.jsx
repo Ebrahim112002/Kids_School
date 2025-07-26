@@ -36,7 +36,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/about",
-        loader: () => fetch("http://localhost:3000/stories"),
+        loader: () => fetch("https://sc-hool-server.vercel.app/stories"),
         Component: About
       },
       {
@@ -51,7 +51,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/cardDetails/:id',
-        loader: ({ params }) => fetch(`http://localhost:3000/stories/${params.id}`),
+        loader: ({ params }) => fetch(`https://sc-hool-server.vercel.app/stories/${params.id}`),
         element: <Card_details></Card_details>
       },
       {
@@ -87,7 +87,7 @@ export const router = createBrowserRouter([
     },
     {
       path: 'alluser',
-      loader: () => fetch('http://localhost:3000/users'),
+      loader: () => fetch('https://sc-hool-server.vercel.app/users'),
       element: <Alluser />
     },
     {
@@ -97,12 +97,12 @@ export const router = createBrowserRouter([
     },
     {
     path:'faculty',
-    loader:()=>fetch('http://localhost:3000/users'),
+    loader:()=>fetch('https://sc-hool-server.vercel.app/users'),
     element:<Faculty></Faculty>
     },
     {
       path:'allstudent',
-       loader:()=>fetch('http://localhost:3000/student'),
+       loader:()=>fetch('https://sc-hool-server.vercel.app/student'),
        element:<Student></Student>
     },
     {

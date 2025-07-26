@@ -16,7 +16,7 @@ const Faculty = () => {
   const fetchTeachers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:3000/users');
+      const res = await axios.get('https://sc-hool-server.vercel.app/users');
       const filtered = res.data.filter(user => user.role === 'teacher');
       setTeachers(filtered);
     } catch (error) {
@@ -44,7 +44,7 @@ const Faculty = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.patch(`http://localhost:3000/users/remove-class/${email}`);
+        await axios.patch(`https://sc-hool-server.vercel.app/users/remove-class/${email}`);
         await fetchTeachers();
         MySwal.fire('Removed!', 'The teacher has been demoted to user.', 'success');
       } catch (error) {

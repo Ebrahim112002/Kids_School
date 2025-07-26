@@ -47,7 +47,7 @@ const Register = () => {
 
       const userData = { name, email, password, phone, photoURL };
 
-      const response = await axios.post('http://localhost:3000/users', userData);
+      const response = await axios.post('https://sc-hool-server.vercel.app/users', userData);
 
       if (response.data.acknowledged) {
         setUser({ ...user, photoURL });

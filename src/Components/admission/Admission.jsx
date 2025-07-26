@@ -22,7 +22,7 @@ const Admission = () => {
 
     try {
       // Submit admission data
-      const response = await fetch('http://localhost:3000/student', {
+      const response = await fetch('https://sc-hool-server.vercel.app/student', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ const Admission = () => {
 
       if (result.acknowledged) {
         // Update user role
-        await fetch(`http://localhost:3000/users/${user.email}`, {
+        await fetch(`https://sc-hool-server.vercel.app/users/${user.email}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',

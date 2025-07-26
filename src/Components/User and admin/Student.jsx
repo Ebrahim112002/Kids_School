@@ -47,10 +47,10 @@ const Student = () => {
     if (result.isConfirmed) {
       try {
         // 1️⃣ Delete student from student collection
-        await axios.delete(`http://localhost:3000/student?email=${student.email}`);
+        await axios.delete(`https://sc-hool-server.vercel.app/student?email=${student.email}`);
 
         // 2️⃣ Update role in users collection to 'user'
-        await axios.patch(`http://localhost:3000/users/remove-class/${student.email}`);
+        await axios.patch(`https://sc-hool-server.vercel.app/users/remove-class/${student.email}`);
 
         // 3️⃣ Remove from UI
         const updatedList = students.filter(s => s.email !== student.email);

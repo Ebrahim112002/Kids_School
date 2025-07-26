@@ -23,7 +23,7 @@ const Alluser = () => {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await fetch('http://localhost:3000/classes');
+        const response = await fetch('https://sc-hool-server.vercel.app/classes');
         const data = await response.json();
         setClasses(data);
       } catch (error) {
@@ -43,7 +43,7 @@ const Alluser = () => {
   const updateUserRole = async (email, newRole, teacherData = null) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/users/${email}`, {
+      const response = await fetch(`https://sc-hool-server.vercel.app/users/${email}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +152,7 @@ const Alluser = () => {
 
     if (result.isConfirmed) {
       try {
-        await fetch(`http://localhost:3000/users/${email}`, {
+        await fetch(`https://sc-hool-server.vercel.app/users/${email}`, {
           method: 'DELETE',
         });
         setUsers(users.filter(user => user._id !== userId));

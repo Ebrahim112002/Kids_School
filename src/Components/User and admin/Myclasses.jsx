@@ -15,7 +15,7 @@ const Myclasses = () => {
       try {
         if (user?.email) {
           // Fetch full user info
-          const userRes = await axios.get(`http://localhost:3000/users?email=${user.email}`);
+          const userRes = await axios.get(`https://sc-hool-server.vercel.app/users?email=${user.email}`);
           if (!userRes.data) {
             throw new Error('User not found');
           }
@@ -24,7 +24,7 @@ const Myclasses = () => {
           // If user is a teacher, fetch class info for assignedClasses
           if (userRes.data.role === 'teacher' && userRes.data.assignedClasses?.length > 0) {
             const classPromises = userRes.data.assignedClasses.map(cls =>
-              axios.get(`http://localhost:3000/classes/${cls.classId}`)
+              axios.get(`https://sc-hool-server.vercel.app/classes/${cls.classId}`)
             );
             const classResponses = await Promise.all(classPromises);
             setClassesData(classResponses.map(res => res.data));
