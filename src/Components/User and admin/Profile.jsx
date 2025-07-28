@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { Authcontext } from '../../Script/Authcontext/Authcontext';
 import { motion } from 'framer-motion';
 import { FaUserCircle, FaUserShield, FaChalkboardTeacher, FaEnvelope, FaPhone, FaCalendarAlt, FaIdCard, FaHome, FaUserGraduate } from 'react-icons/fa';
+import axios from 'axios';
 
 const Profile = () => {
     const { user } = useContext(Authcontext);
@@ -18,23 +19,23 @@ const Profile = () => {
             }
 
             try {
-                // Determine which endpoint to call based on user role
-                let endpoint = '';
-                if (user.role === 'teacher') {
-                    endpoint = `https://sc-hool-server.vercel.app/users?email=${user.email}`;
-                } else if (user.role === 'admin') {
-                    endpoint = `https://sc-hool-server.vercel.app/users?email=${user.email}`;
-                } else {
-                    endpoint = `https://sc-hool-server.vercel.app/users?email=${user.email}`;
+                // Fetch user data
+                const userResponse = await axios.get(`http://localhost:3000/users?email=${user.email}`);
+                const userData = userResponse.data;
+                if (!userData) throw new Error('No user data found');
+
+                let profile = { ...userData };
+
+                // If user is a student, fetch additional data from student collection
+                if (userData.role === 'student') {
+                    const studentResponse = await axios.get(`http://localhost:3000/student?email=${user.email}`);
+                    const studentData = studentResponse.data;
+                    if (studentData) {
+                        profile = { ...profile, ...studentData, enrolledClassName: studentData.className };
+                    }
                 }
 
-                const response = await fetch(endpoint);
-                if (!response.ok) throw new Error('Failed to fetch profile data');
-                
-                const data = await response.json();
-                if (!data) throw new Error('No profile data found');
-                
-                setProfileData(data);
+                setProfileData(profile);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching profile data:', error);
@@ -44,7 +45,7 @@ const Profile = () => {
         };
 
         fetchProfileData();
-    }, [user]);
+    }, [user?.email]);
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -90,7 +91,8 @@ const Profile = () => {
                 {/* Profile Header */}
                 <div className={`p-6 text-center ${
                     profileData.role === 'admin' ? 'bg-indigo-600' : 
-                    profileData.role === 'teacher' ? 'bg-green-600' : 'bg-blue-600'
+                    profileData.role === 'teacher' ? 'bg-green-600' : 
+                    profileData.role === 'student' ? 'bg-blue-500' : 'bg-blue-600'
                 } text-white`}>
                     <div className="flex flex-col items-center">
                         {profileData.photoURL ? (
@@ -98,6 +100,7 @@ const Profile = () => {
                                 src={profileData.photoURL}
                                 alt={profileData.name}
                                 className="w-24 h-24 rounded-full object-cover border-4 border-white border-opacity-30 mb-4"
+                                onError={(e) => (e.target.src = 'https://via.placeholder.com/100')}
                             />
                         ) : (
                             <FaUserCircle className="w-24 h-24 text-white text-opacity-80 mb-4" />
@@ -114,7 +117,12 @@ const Profile = () => {
                                     <FaChalkboardTeacher className="mr-1" /> Teacher
                                 </>
                             )}
-                            {!['admin', 'teacher'].includes(profileData.role) && (
+                            {profileData.role === 'student' && (
+                                <>
+                                    <FaUserGraduate className="mr-1" /> Student
+                                </>
+                            )}
+                            {!['admin', 'teacher', 'student'].includes(profileData.role) && (
                                 <>
                                     <FaUserGraduate className="mr-1" /> User
                                 </>
@@ -187,7 +195,48 @@ const Profile = () => {
                                 </>
                             )}
 
-                            {!['admin', 'teacher'].includes(profileData.role) && (
+                            {profileData.role === 'student' && (
+                                <>
+                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                                        <FaUserGraduate className="mr-2 text-blue-500" />
+                                        Student Information
+                                    </h3>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-sm text-gray-500">Enrolled Class</p>
+                                            <p className="font-medium mt-1">
+                                                {profileData.enrolledClassName || 'Not enrolled'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Registration Number</p>
+                                            <p className="font-medium mt-1">
+                                                {profileData.registrationNumber || 'N/A'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Date of Birth</p>
+                                            <p className="font-medium mt-1">
+                                                {profileData.dob ? formatDate(profileData.dob) : 'N/A'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Gender</p>
+                                            <p className="font-medium mt-1">{profileData.gender || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Parent's Name</p>
+                                            <p className="font-medium mt-1">{profileData.parentName || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Address</p>
+                                            <p className="font-medium mt-1">{profileData.address || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {!['admin', 'teacher', 'student'].includes(profileData.role) && (
                                 <>
                                     <h3 className="text-lg font-semibold text-gray-800 flex items-center">
                                         <FaHome className="mr-2 text-blue-600" />

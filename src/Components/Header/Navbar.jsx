@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Authcontext } from '../../Script/Authcontext/Authcontext';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import Logo from '../Hooks/Logo';
 
 const MySwal = withReactContent(Swal);
 
@@ -17,7 +18,7 @@ const Navbar = () => {
   // Fetch full user (with role) from backend using email
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://sc-hool-server.vercel.app/users?email=${user.email}`)
+      fetch(`http://localhost:3000/users?email=${user.email}`)
         .then((res) => res.json())
         .then((data) => setDbUser(data))
         .catch((err) => console.error('Error fetching user role:', err));
@@ -92,16 +93,12 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Dashboard link based on role from backend */}
-      {user && dbUser?.role === 'student' ? (
-        <Link to="/StuDashboard" className={getActive('/StuDashboard', 'text-green-600')}>
-          Student Dashboard
-        </Link>
-      ) : dbUser?.role ? (
+      {/* Dashboard link for all authenticated users */}
+      {user && (
         <Link to="/Dashboard" className={getActive('/Dashboard', 'text-green-600')}>
           Dashboard
         </Link>
-      ) : null}
+      )}
     </>
   );
 
@@ -123,8 +120,7 @@ const Navbar = () => {
             </ul>
           </div>
           <div className="flex items-center gap-2">
-            <img src="https://i.ibb.co.com/Z1Sr8WLQ/logo.png" alt="Logo" className="w-10 h-10" />
-            <span className="text-3xl font-bold text-blue-800">SCHOOL</span>
+           <Logo></Logo>
           </div>
         </div>
 

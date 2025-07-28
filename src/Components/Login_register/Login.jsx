@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react';
-import { Authcontext } from '../../Script/Authcontext/Authcontext';
+;
 import login_json from '../../assets/Login.json';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import Lottie from 'lottie-react';
 import { motion } from 'framer-motion';
+import { Authcontext } from '../../Script/Authcontext/Authcontext';
 
 const Login = () => {
   const { signIn, setUser } = useContext(Authcontext);

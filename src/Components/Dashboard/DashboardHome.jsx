@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const DashboardHome = () => {
   const { user } = useContext(Authcontext);
-
+console.log(user)
   return (
     <div className="p-6 space-y-8">
       {/* Welcome Header */}
@@ -14,7 +14,7 @@ const DashboardHome = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-3xl font-bold text-gray-800">Welcome , {user?.displayName || 'User'} 🎓</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Welcome , {user?.name || 'User'} 🎓</h1>
         <p className="text-gray-600 mt-2 text-sm leading-relaxed">
           EduManage Pro is your all-in-one platform for managing academic activities and communication. Whether you're a student, teacher, or administrator, everything you need is just a click away in the sidebar.
         </p>

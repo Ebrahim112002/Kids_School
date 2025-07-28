@@ -18,7 +18,7 @@ const StuDashboard = () => {
       }
 
       try {
-        const response = await fetch(`https://sc-hool-server.vercel.app/student?email=${user.email}`);
+        const response = await fetch(`http://localhost:3000//student?email=${user.email}`);
         if (!response.ok) {
           throw new Error('Failed to fetch student data');
         }

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import admission from '../../assets/admission.json';
 import Lottie from 'lottie-react';
 import Swal from 'sweetalert2';
@@ -9,20 +9,75 @@ import { motion } from 'framer-motion';
 const Admission = () => {
   const { user } = useContext(Authcontext);
   const navigate = useNavigate();
+  const [errors, setErrors] = useState({});
+
+  // List of classes (matching backend classesCollection)
+  const classOptions = [
+    'Play Group',
+    'Nursery',
+    'KG-1',
+    'KG-2',
+    'Class 1',
+    'Class 2',
+    'Class 3',
+    'Class 4',
+    'Class 5',
+    'Class 6',
+    'Class 7',
+    'Class 8',
+    'Class 9',
+    'Class 10',
+    'Class 11',
+    'Class 12',
+  ];
+
+  // Validate form inputs
+  const validateForm = (formData) => {
+    const newErrors = {};
+    if (!formData.name || formData.name.length < 2) {
+      newErrors.name = 'Student name must be at least 2 characters long';
+    }
+    if (!formData.dob) {
+      newErrors.dob = 'Date of birth is required';
+    }
+    if (!formData.gender) {
+      newErrors.gender = 'Please select a gender';
+    }
+    if (!formData.className || formData.className === '') {
+      newErrors.className = 'Please select a class';
+    }
+    if (!formData.parentName || formData.parentName.length < 2) {
+      newErrors.parentName = 'Parent name must be at least 2 characters long';
+    }
+    if (!formData.phone || !/^[0-9]{11}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must be exactly 11 digits';
+    }
+    if (!formData.address || formData.address.length < 5) {
+      newErrors.address = 'Address must be at least 5 characters long';
+    }
+    return newErrors;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
 
     const form = e.target;
     const formData = new FormData(form);
     const studentData = Object.fromEntries(formData.entries());
 
     studentData.email = user.email;
-    studentData.role = 'student';
+
+    // Client-side validation
+    const validationErrors = validateForm(studentData);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
 
     try {
-      // Submit admission data
-      const response = await fetch('https://sc-hool-server.vercel.app/student', {
+      // Submit admission data to pending students
+      const response = await fetch('http://localhost:3000/pendingStudents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,25 +88,17 @@ const Admission = () => {
       const result = await response.json();
 
       if (result.acknowledged) {
-        // Update user role
-        await fetch(`https://sc-hool-server.vercel.app/users/${user.email}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ role: 'student' }),
-        });
-
         Swal.fire({
           icon: 'success',
-          title: 'Admission Successful',
-          text: `Student registered with Reg. No. ${result.registrationNumber}`,
+          title: 'Admission Submitted',
+          text: `Your admission is pending approval. Your temporary Reg. No. is ${result.registrationNumber}.`,
           confirmButtonColor: '#3085d6',
         });
 
         form.reset();
+        navigate('/dashboard');
       } else {
-        throw new Error(result.error || 'Admission failed');
+        throw new Error(result.error || 'Admission submission failed');
       }
     } catch (err) {
       console.error('Error:', err);
@@ -109,34 +156,47 @@ const Admission = () => {
         >
           <h2 className="text-3xl font-bold text-blue-800 mb-6 text-center">Admission Form</h2>
           <form onSubmit={handleSubmit}>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Student's Name</label>
               <input
                 type="text"
                 name="name"
                 required
                 placeholder="Enter student's full name"
-                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  errors.name ? 'border-red-500' : ''
+                }`}
               />
+              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
             </div>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Date of Birth</label>
               <input
                 type="date"
                 name="dob"
                 required
-                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  errors.dob ? 'border-red-500' : ''
+                }`}
               />
+              {errors.dob && <p className="text-red-500 text-xs mt-1">{errors.dob}</p>}
             </div>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Gender</label>
               <div className="flex gap-6 mt-1">
-                <label><input type="radio" name="gender" value="Male" required /> Male</label>
-                <label><input type="radio" name="gender" value="Female" required /> Female</label>
-                <label><input type="radio" name="gender" value="Other" required /> Other</label>
+                <label>
+                  <input type="radio" name="gender" value="Male" required /> Male
+                </label>
+                <label>
+                  <input type="radio" name="gender" value="Female" required /> Female
+                </label>
+                <label>
+                  <input type="radio" name="gender" value="Other" required /> Other
+                </label>
               </div>
+              {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
             </div>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Email</label>
               <input
                 type="email"
@@ -146,27 +206,40 @@ const Admission = () => {
                 className="w-full p-3 border rounded-md bg-gray-100 text-gray-500"
               />
             </div>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Class Applying For</label>
-              <input
-                type="text"
+              <select
                 name="className"
                 required
-                placeholder="Grade 1, Class 5, etc."
-                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
+                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  errors.className ? 'border-red-500' : ''
+                }`}
+              >
+                <option value="" disabled selected>
+                  Select a class
+                </option>
+                {classOptions.map((className) => (
+                  <option key={className} value={className}>
+                    {className}
+                  </option>
+                ))}
+              </select>
+              {errors.className && <p className="text-red-500 text-xs mt-1">{errors.className}</p>}
             </div>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Parent's Name</label>
               <input
                 type="text"
                 name="parentName"
                 required
                 placeholder="Enter parent's full name"
-                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  errors.parentName ? 'border-red-500' : ''
+                }`}
               />
+              {errors.parentName && <p className="text-red-500 text-xs mt-1">{errors.parentName}</p>}
             </div>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Phone Number</label>
               <input
                 type="text"
@@ -174,18 +247,24 @@ const Admission = () => {
                 required
                 placeholder="01XXXXXXXXX"
                 pattern="[0-9]{11}"
-                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  errors.phone ? 'border-red-500' : ''
+                }`}
               />
+              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Address</label>
               <textarea
                 name="address"
                 required
                 rows="3"
                 placeholder="House, Road, Area, City"
-                className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none ${
+                  errors.address ? 'border-red-500' : ''
+                }`}
               />
+              {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
             </div>
             <button
               type="submit"

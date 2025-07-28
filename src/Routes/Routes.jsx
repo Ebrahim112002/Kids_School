@@ -14,14 +14,17 @@ import PrivateRoute from "../Script/Authcontext/PrivateRoute";
 import StuDashboard from "../Components/Dashboard/StuDashboard";
 import Admission_info from "../Components/admission/Admission_info";
 import Login from "../Components/Login_register/Login";
-
-import Alluser from "../Components/User and admin/Alluser";
 import DashboardHome from "../Components/Dashboard/DashboardHome";
 import DashboardNav from "../Components/Dashboard/DashboardNav";
 import Profile from "../Components/User and admin/Profile";
 import Faculty from "../Components/User and admin/Faculty";
 import Student from "../Components/User and admin/Student";
 import Myclasses from "../Components/User and admin/Myclasses";
+import PendingAdmissions from "../Components/Admin/PendingAdmissions";
+import Updateprofile from "../Components/User and admin/Updateprofile";
+import AllUsers from "../Components/User and admin/AllUsers";
+import NoticeBoard from "../Components/Admin/NoticeBoard";
+
 
 
 export const router = createBrowserRouter([
@@ -36,7 +39,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/about",
-        loader: () => fetch("https://sc-hool-server.vercel.app/stories"),
+        loader: () => fetch("http://localhost:3000/stories"),
         Component: About
       },
       {
@@ -51,7 +54,7 @@ export const router = createBrowserRouter([
       },
       {
         path: '/cardDetails/:id',
-        loader: ({ params }) => fetch(`https://sc-hool-server.vercel.app/stories/${params.id}`),
+        loader: ({ params }) => fetch(`http://localhost:3000/stories/${params.id}`),
         element: <Card_details></Card_details>
       },
       {
@@ -87,8 +90,8 @@ export const router = createBrowserRouter([
     },
     {
       path: 'alluser',
-      loader: () => fetch('https://sc-hool-server.vercel.app/users'),
-      element: <Alluser />
+      loader: () => fetch('http://localhost:3000//users'),
+      element:<AllUsers></AllUsers>
     },
     {
      path:'profile',
@@ -97,17 +100,29 @@ export const router = createBrowserRouter([
     },
     {
     path:'faculty',
-    loader:()=>fetch('https://sc-hool-server.vercel.app/users'),
+    loader:()=>fetch('http://localhost:3000//users'),
     element:<Faculty></Faculty>
     },
     {
       path:'allstudent',
-       loader:()=>fetch('https://sc-hool-server.vercel.app/student'),
+       loader:()=>fetch('http://localhost:3000//student'),
        element:<Student></Student>
     },
     {
       path:'myclass',
       element:<Myclasses></Myclasses>
+    },
+    {
+      path:'pending',
+      Component:PendingAdmissions
+    },
+    {
+      path:'notice',
+      element:<NoticeBoard></NoticeBoard>
+    },
+    {
+      path:'updateProfile',
+      Component:Updateprofile
     },
   ]
 }

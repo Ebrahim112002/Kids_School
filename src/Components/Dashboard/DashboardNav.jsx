@@ -9,17 +9,18 @@ import {
   FaBook, 
   FaBars,
   FaTimes,
-  FaGraduationCap
+  FaGraduationCap,
+  FaBullhorn
 } from 'react-icons/fa';
 import Logo from '../Hooks/Logo';
 import { Authcontext } from '../../Script/Authcontext/Authcontext';
-import axios from 'axios'; // Import axios for API calls
+import axios from 'axios';
 
 const DashboardNav = () => {
   const { user } = useContext(Authcontext);
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [userRole, setUserRole] = useState(null); // State to store user role
+  const [userRole, setUserRole] = useState(null);
   const location = useLocation();
 
   // Handle window resize for mobile view
@@ -39,49 +40,56 @@ const DashboardNav = () => {
     const fetchUserRole = async () => {
       if (user && user.email) {
         try {
-          const response = await axios.get('https://sc-hool-server.vercel.app/users', {
-            params: { email: user.email } // Send email as query parameter
+          const response = await axios.get('http://localhost:3000/users', {
+            params: { email: user.email }
           });
-          // Assuming response.data contains the role or user object with role
-          const role = response.data.role || response.data[0]?.role || 'user'; // Fallback to 'user' if role not found
+          const role = response.data.role || response.data[0]?.role || 'user';
           setUserRole(role.toLowerCase());
         } catch (error) {
           console.error('Error fetching user role:', error);
-          setUserRole('user'); // Fallback to 'user' role on error
+          setUserRole('user');
         }
       }
     };
 
     fetchUserRole();
-  }, [user]); // Run when user changes
+  }, [user]);
 
   // Define all possible nav items
   const navItems = [
-    { name: 'Home', icon: <FaHome className="text-lg" />, to: '/' },
+    { name: 'Home', icon: <FaHome className="text-lg" />, to: '/dashboard' },
     { name: 'Profile', icon: <FaUser className="text-lg" />, to: 'profile' },
+    { name: 'Update Profile', icon: <FaUser className="text-lg" />, to: 'updateProfile' },
+    { name: 'Notice', icon: <FaBullhorn className="text-lg" />, to: 'notice' },
     { name: 'My Classes', icon: <FaBook className="text-lg" />, to: 'myclass' },
     { name: 'Students', icon: <FaGraduationCap className="text-lg" />, to: 'allstudent' },
     { name: 'Faculty', icon: <FaChalkboardTeacher className="text-lg" />, to: 'faculty' },
     { name: 'Users', icon: <FaUsers className="text-lg" />, to: 'alluser' },
+    { name: 'Pending Admissions', icon: <FaGraduationCap className="text-lg" />, to: 'pending' },
   ];
 
   // Filter nav items based on user role
   const filteredNavItems = () => {
-    if (!userRole) return []; // Return empty array until role is fetched
+    if (!userRole) return [];
 
     switch (userRole) {
       case 'admin':
-        return navItems; // Admin sees all items
+        return navItems.filter(item => 
+          ['Home', 'Profile', 'Update Profile', 'Notice', 'Students', 'Faculty', 'Users', 'Pending Admissions'].includes(item.name)
+        );
       case 'teacher':
         return navItems.filter(item => 
-          ['Home', 'Profile', 'My Classes'].includes(item.name)
+          ['Home', 'Profile', 'Update Profile', 'Notice', 'My Classes'].includes(item.name)
         );
+      case 'student':
       case 'user':
         return navItems.filter(item => 
-          ['Home', 'Profile'].includes(item.name)
+          ['Home', 'Profile', 'Update Profile', 'Notice'].includes(item.name)
         );
       default:
-        return navItems; // Fallback to all items for unknown roles
+        return navItems.filter(item => 
+          ['Home', 'Profile', 'Update Profile', 'Notice'].includes(item.name)
+        );
     }
   };
 
@@ -121,7 +129,7 @@ const DashboardNav = () => {
                 <ul className="space-y-1">
                   {filteredNavItems().map((item) => {
                     const isActive = location.pathname === `/dashboard/${item.to}` || 
-                                    (item.to === '' && location.pathname === '/dashboard');
+                                    (item.to === '/dashboard' && location.pathname === '/dashboard');
                     
                     return (
                       <motion.li
@@ -132,28 +140,22 @@ const DashboardNav = () => {
                         <NavLink
                           to={item.to}
                           end
-                          className={({ isActive }) => 
-                            `flex items-center p-3 rounded-lg transition-all ${
-                              isActive
-                                ? 'bg-indigo-50 text-indigo-600 font-medium'
-                                : 'hover:bg-gray-100 text-gray-600'
-                            }`
-                          }
+                          className={`flex items-center p-3 rounded-lg transition-all ${
+                            isActive
+                              ? 'bg-indigo-50 text-indigo-600 font-medium'
+                              : 'hover:bg-gray-100 text-gray-600'
+                          }`}
                           onClick={() => isMobile && setIsOpen(false)}
                         >
-                          {({ isActive }) => (
-                            <>
-                              <span className={`mr-3 ${isActive ? 'text-indigo-500' : 'text-gray-500'}`}>
-                                {item.icon}
-                              </span>
-                              <span>{item.name}</span>
-                              {isActive && (
-                                <motion.span 
-                                  layoutId="activeIndicator"
-                                  className="ml-auto w-1.5 h-6 bg-indigo-500 rounded-full"
-                                />
-                              )}
-                            </>
+                          <span className={`mr-3 ${isActive ? 'text-indigo-500' : 'text-gray-500'}`}>
+                            {item.icon}
+                          </span>
+                          <span>{item.name}</span>
+                          {isActive && (
+                            <motion.span 
+                              layoutId="activeIndicator"
+                              className="ml-auto w-1.5 h-6 bg-indigo-500 rounded-full"
+                            />
                           )}
                         </NavLink>
                       </motion.li>
