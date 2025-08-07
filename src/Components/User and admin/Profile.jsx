@@ -20,7 +20,9 @@ const Profile = () => {
 
             try {
                 // Fetch user data
-                const userResponse = await axios.get(`http://localhost:3000/users?email=${user.email}`);
+                const userResponse = await axios.get(`https://sc-hool-server.vercel.app/users?email=${user.email}`, {
+                    headers: { 'x-user-email': user.email },
+                });
                 const userData = userResponse.data;
                 if (!userData) throw new Error('No user data found');
 
@@ -28,7 +30,7 @@ const Profile = () => {
 
                 // If user is a student, fetch additional data from student collection
                 if (userData.role === 'student') {
-                    const studentResponse = await axios.get(`http://localhost:3000/student?email=${user.email}`);
+                    const studentResponse = await axios.get(`https://sc-hool-server.vercel.app/student?email=${user.email}`);
                     const studentData = studentResponse.data;
                     if (studentData) {
                         profile = { ...profile, ...studentData, enrolledClassName: studentData.className };
@@ -89,11 +91,7 @@ const Profile = () => {
                 className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden"
             >
                 {/* Profile Header */}
-                <div className={`p-6 text-center ${
-                    profileData.role === 'admin' ? 'bg-indigo-600' : 
-                    profileData.role === 'teacher' ? 'bg-green-600' : 
-                    profileData.role === 'student' ? 'bg-blue-500' : 'bg-blue-600'
-                } text-white`}>
+                <div className={`p-6 text-center ${profileData.role === 'admin' ? 'bg-indigo-600' : profileData.role === 'teacher' ? 'bg-green-600' : profileData.role === 'student' ? 'bg-blue-500' : 'bg-blue-600'} text-white`}>
                     <div className="flex flex-col items-center">
                         {profileData.photoURL ? (
                             <img
@@ -172,11 +170,38 @@ const Profile = () => {
                                     </h3>
                                     <div className="space-y-3">
                                         <div>
-                                            <p className="text-sm text-gray-500">Assigned Class</p>
-                                            <p className="font-medium mt-1">
-                                                {profileData.assignedClassName || 'Not assigned'}
-                                            </p>
+                                            <p className="text-sm text-gray-500">Shift</p>
+                                            <p className="font-medium mt-1">{profileData.shift || 'Not specified'}</p>
                                         </div>
+                                        {Array.isArray(profileData.assignedClasses) && profileData.assignedClasses.length > 0 && (
+                                            <div>
+                                                <p className="text-sm text-gray-500">Assigned Classes</p>
+                                                {profileData.assignedClasses.map((cls, index) => {
+                                                    const classSubjects = profileData.subjects?.find(subj => subj.classId === cls.classId);
+                                                    return (
+                                                        <div key={index} className="ml-2 mt-1">
+                                                            <p>
+                                                                <strong>Class:</strong> {cls.className || 'N/A'}
+                                                            </p>
+                                                            <p>
+                                                                <strong>Subjects:</strong>{' '}
+                                                                {classSubjects && Array.isArray(classSubjects.subjects)
+                                                                    ? classSubjects.subjects.join(', ')
+                                                                    : 'Not specified'}
+                                                            </p>
+                                                            <p>
+                                                                <strong>Room Number:</strong>{' '}
+                                                                {classSubjects && classSubjects.roomNumber ? classSubjects.roomNumber : 'Not specified'}
+                                                            </p>
+                                                            <p>
+                                                                <strong>Class Time:</strong>{' '}
+                                                                {classSubjects && classSubjects.classTime ? classSubjects.classTime : 'Not specified'}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
                                 </>
                             )}
@@ -206,6 +231,12 @@ const Profile = () => {
                                             <p className="text-sm text-gray-500">Enrolled Class</p>
                                             <p className="font-medium mt-1">
                                                 {profileData.enrolledClassName || 'Not enrolled'}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Enrolled Group</p>
+                                            <p className="font-medium mt-1">
+                                                {profileData.stream || 'Not enrolled'}
                                             </p>
                                         </div>
                                         <div>

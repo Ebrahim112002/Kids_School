@@ -48,7 +48,7 @@ const AuthProvider = ({ children }) => {
       };
       console.log('Sending to backend:', payload);
 
-      const backendResponse = await fetch('http://localhost:3000/users', {
+      const backendResponse = await fetch('https://sc-hool-server.vercel.app/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -65,7 +65,7 @@ const AuthProvider = ({ children }) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Fetch user from backend
-      const userResponse = await fetch(`http://localhost:3000/users/${encodeURIComponent(email)}`);
+      const userResponse = await fetch(`https://sc-hool-server.vercel.app/users/${encodeURIComponent(email)}`);
       if (!userResponse.ok) {
         throw new Error('Failed to fetch created user data');
       }
@@ -104,7 +104,7 @@ const AuthProvider = ({ children }) => {
       const idToken = await userCredential.user.getIdToken();
 
       // Get backend data
-      const response = await fetch('http://localhost:3000/login', {
+      const response = await fetch('https://sc-hool-server.vercel.app/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
@@ -176,7 +176,7 @@ const AuthProvider = ({ children }) => {
           const retryDelay = 1000;
 
           while (attempts < maxAttempts) {
-            const res = await fetch(`http://localhost:3000/users/${encodeURIComponent(email)}`, {
+            const res = await fetch(`https://sc-hool-server.vercel.app/users/${encodeURIComponent(email)}`, {
               headers: { 'x-user-email': email },
             });
 
@@ -205,7 +205,7 @@ const AuthProvider = ({ children }) => {
               role: 'user',
               createdAt: new Date(),
             };
-            const createRes = await fetch('http://localhost:3000/users', {
+            const createRes = await fetch('https://sc-hool-server.vercel.app/users', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(newUser),

@@ -38,23 +38,38 @@ export const router = createBrowserRouter([
         Component: Home
       },
       {
-        path: "/about",
-        loader: () => fetch("http://localhost:3000/stories"),
+        path: "about",
+        loader: async () => {
+  try {
+    const response = await fetch('https://sc-hool-server.vercel.app/stories');
+    return response.ok ? await response.json() : { stories: [] };
+  } catch (error) {
+    console.error('Loader error:', error);
+    return { stories: [] };
+  }
+},
         Component: About
       },
       {
         path: "/facilities",
-
         Component: Facilities
       },
       {
-        path: '/contact',
-        loader: () => fetch("/public/teacher.json"),
+        path: 'contact',
+        loader: async () => {
+  try {
+    const response = await fetch('https://sc-hool-server.vercel.app/teacher');
+    return response.ok ? await response.json() : { stories: [] };
+  } catch (error) {
+    console.error('Loader error:', error);
+    return { stories: [] };
+  }
+},
         Component: Teacher
       },
       {
         path: '/cardDetails/:id',
-        loader: ({ params }) => fetch(`http://localhost:3000/stories/${params.id}`),
+        loader: ({ params }) => fetch(`https://sc-hool-server.vercel.app/stories/${params.id}`),
         element: <Card_details></Card_details>
       },
       {
@@ -90,7 +105,7 @@ export const router = createBrowserRouter([
     },
     {
       path: 'alluser',
-      loader: () => fetch('http://localhost:3000//users'),
+      loader: () => fetch('/https://sc-hool-server.vercel.app/users'),
       element:<AllUsers></AllUsers>
     },
     {
@@ -100,12 +115,12 @@ export const router = createBrowserRouter([
     },
     {
     path:'faculty',
-    loader:()=>fetch('http://localhost:3000//users'),
+    loader:()=>fetch('/https://sc-hool-server.vercel.app/users'),
     element:<Faculty></Faculty>
     },
     {
       path:'allstudent',
-       loader:()=>fetch('http://localhost:3000//student'),
+       loader:()=>fetch('/https://sc-hool-server.vercel.app/student'),
        element:<Student></Student>
     },
     {

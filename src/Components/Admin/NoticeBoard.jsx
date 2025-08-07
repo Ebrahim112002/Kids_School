@@ -14,7 +14,7 @@ const NoticeBoard = () => {
   // Fetch notices
   const fetchNotices = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/notices');
+      const response = await axios.get('https://sc-hool-server.vercel.app/notices');
       setNotices(response.data);
     } catch (error) {
       if (error.response?.status === 404) {
@@ -69,7 +69,7 @@ const NoticeBoard = () => {
     try {
       if (editingNotice) {
         const response = await axios.patch(
-          `http://localhost:3000/notices/${editingNotice._id}`,
+          `https://sc-hool-server.vercel.app/notices/${editingNotice._id}`,
           newNotice,
           { headers: { 'x-user-email': user.email } }
         );
@@ -80,7 +80,7 @@ const NoticeBoard = () => {
         });
         console.log('Update response:', response.data);
       } else {
-        const response = await axios.post('http://localhost:3000/notices', newNotice, {
+        const response = await axios.post('https://sc-hool-server.vercel.app/notices', newNotice, {
           headers: { 'x-user-email': user.email },
         });
         Swal.fire({
@@ -123,7 +123,7 @@ const NoticeBoard = () => {
     if (result.isConfirmed) {
       setIsLoading(true);
       try {
-        const response = await axios.delete(`http://localhost:3000/notices/${id}`, {
+        const response = await axios.delete(`https://sc-hool-server.vercel.app/notices/${id}`, {
           headers: { 'x-user-email': user.email },
         });
         Swal.fire({

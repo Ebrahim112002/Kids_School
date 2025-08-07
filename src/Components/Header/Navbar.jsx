@@ -18,7 +18,7 @@ const Navbar = () => {
   // Fetch full user (with role) from backend using email
   useEffect(() => {
     if (user?.email) {
-      fetch(`http://localhost:3000/users?email=${user.email}`)
+      fetch(`https://sc-hool-server.vercel.app/users?email=${user.email}`)
         .then((res) => res.json())
         .then((data) => setDbUser(data))
         .catch((err) => console.error('Error fetching user role:', err));

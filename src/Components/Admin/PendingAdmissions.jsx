@@ -21,7 +21,7 @@ const PendingAdmissions = () => {
       }
 
       try {
-        const response = await axios.get('http://localhost:3000/pendingStudents', {
+        const response = await axios.get('https://sc-hool-server.vercel.app/pendingStudents', {
           params: { email: user.email },
         });
         setPendingStudents(response.data);
@@ -39,7 +39,7 @@ const PendingAdmissions = () => {
   const handleApprove = async (studentEmail, registrationNumber) => {
     try {
       const response = await axios.post(
-        `http://localhost:3000/pendingStudents/approve/${studentEmail}`,
+        `https://sc-hool-server.vercel.app/pendingStudents/approve/${studentEmail}`,
         {},
         { params: { adminEmail: user.email } }
       );
@@ -69,7 +69,7 @@ const PendingAdmissions = () => {
   const handleReject = async (studentEmail, registrationNumber) => {
     try {
       const response = await axios.post(
-        `http://localhost:3000/pendingStudents/reject/${studentEmail}`,
+        `https://sc-hool-server.vercel.app/pendingStudents/reject/${studentEmail}`,
         {},
         { params: { adminEmail: user.email } }
       );

@@ -10,8 +10,8 @@ const Admission = () => {
   const { user } = useContext(Authcontext);
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+  const [selectedClass, setSelectedClass] = useState('');
 
-  // List of classes (matching backend classesCollection)
   const classOptions = [
     'Play Group',
     'Nursery',
@@ -31,7 +31,8 @@ const Admission = () => {
     'Class 12',
   ];
 
-  // Validate form inputs
+  const streamOptions = ['Science', 'Commerce', 'Arts'];
+
   const validateForm = (formData) => {
     const newErrors = {};
     if (!formData.name || formData.name.length < 2) {
@@ -45,6 +46,9 @@ const Admission = () => {
     }
     if (!formData.className || formData.className === '') {
       newErrors.className = 'Please select a class';
+    }
+    if (['Class 9', 'Class 10', 'Class 11', 'Class 12'].includes(formData.className) && !formData.stream) {
+      newErrors.stream = 'Please select a stream';
     }
     if (!formData.parentName || formData.parentName.length < 2) {
       newErrors.parentName = 'Parent name must be at least 2 characters long';
@@ -67,8 +71,11 @@ const Admission = () => {
     const studentData = Object.fromEntries(formData.entries());
 
     studentData.email = user.email;
+    // Ensure stream is included, set to empty string if not applicable
+    if (!['Class 9', 'Class 10', 'Class 11', 'Class 12'].includes(studentData.className)) {
+      studentData.stream = '';
+    }
 
-    // Client-side validation
     const validationErrors = validateForm(studentData);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -76,8 +83,7 @@ const Admission = () => {
     }
 
     try {
-      // Submit admission data to pending students
-      const response = await fetch('http://localhost:3000/pendingStudents', {
+      const response = await fetch('https://sc-hool-server.vercel.app/pendingStudents', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,6 +102,7 @@ const Admission = () => {
         });
 
         form.reset();
+        setSelectedClass('');
         navigate('/dashboard');
       } else {
         throw new Error(result.error || 'Admission submission failed');
@@ -109,6 +116,10 @@ const Admission = () => {
         confirmButtonColor: '#d33',
       });
     }
+  };
+
+  const handleClassChange = (e) => {
+    setSelectedClass(e.target.value);
   };
 
   const containerVariants = {
@@ -211,6 +222,7 @@ const Admission = () => {
               <select
                 name="className"
                 required
+                onChange={handleClassChange}
                 className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                   errors.className ? 'border-red-500' : ''
                 }`}
@@ -226,6 +238,28 @@ const Admission = () => {
               </select>
               {errors.className && <p className="text-red-500 text-xs mt-1">{errors.className}</p>}
             </div>
+            {['Class 9', 'Class 10', 'Class 11', 'Class 12'].includes(selectedClass) && (
+              <div className="mb-4">
+                <label className="block text-sm font-semibold mb-1">Group</label>
+                <select
+                  name="stream"
+                  required
+                  className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                    errors.stream ? 'border-red-500' : ''
+                  }`}
+                >
+                  <option value="" disabled selected>
+                    Select a stream
+                  </option>
+                  {streamOptions.map((stream) => (
+                    <option key={stream} value={stream}>
+                      {stream}
+                    </option>
+                  ))}
+                </select>
+                {errors.stream && <p className="text-red-500 text-xs mt-1">{errors.stream}</p>}
+              </div>
+            )}
             <div className="mb-4">
               <label className="block text-sm font-semibold mb-1">Parent's Name</label>
               <input

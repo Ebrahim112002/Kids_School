@@ -1,14 +1,16 @@
 import React from 'react';
-import { useLoaderData } from 'react-router';
+
 import Card from './Card';
+import { useLoaderData } from 'react-router';
+
 
 const About = () => {
     const data = useLoaderData();
-
+console.log(data)
     
     const cards = Array.isArray(data) ? data : (Array.isArray(data?.stories) ? data.stories : []);
 
-    console.log('Cards:', cards); 
+    console.log(cards)
 
     return (
         <div className='w-[90%] mx-auto my-10 py-6'>

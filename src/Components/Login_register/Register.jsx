@@ -101,7 +101,7 @@ const Register = () => {
     });
 
     // Get the complete user data from backend
-    const response = await fetch(`http://localhost:3000/users/${encodeURIComponent(userData.email)}`, {
+    const response = await fetch(`https://sc-hool-server.vercel.app/users/${encodeURIComponent(userData.email)}`, {
       headers: { 'x-user-email': userData.email },
     });
 
@@ -123,7 +123,7 @@ const Register = () => {
       text: 'Your account has been created.',
       confirmButtonColor: '#3085d6',
     });
-
+    
     form.reset();
     setPhoto(null);
     navigate(from, { replace: true });

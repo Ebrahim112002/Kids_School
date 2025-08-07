@@ -36,7 +36,7 @@ const UpdateProfile = () => {
 
       try {
         // Fetch user data
-        const userResponse = await axios.get(`http://localhost:3000/users?email=${user.email}`);
+        const userResponse = await axios.get(`https://sc-hool-server.vercel.app/users?email=${user.email}`);
         const userData = userResponse.data;
         if (!userData) throw new Error('No user data found');
 
@@ -52,7 +52,7 @@ const UpdateProfile = () => {
 
         // Fetch student data if user is a student
         if (userData.role === 'student') {
-          const studentResponse = await axios.get(`http://localhost:3000/student?email=${user.email}`);
+          const studentResponse = await axios.get(`https://sc-hool-server.vercel.app/student?email=${user.email}`);
           const studentData = studentResponse.data;
           if (studentData) {
             setFormData((prev) => ({
@@ -189,7 +189,7 @@ const UpdateProfile = () => {
 
       // Update users collection
       await axios.patch(
-        `http://localhost:3000/users/${user.email}?requesterEmail=${user.email}`,
+        `https://sc-hool-server.vercel.app/users/${user.email}?requesterEmail=${user.email}`,
         userUpdateData
       );
 
@@ -205,7 +205,7 @@ const UpdateProfile = () => {
           ...(photoURL && { photoURL }),
         };
         await axios.patch(
-          `http://localhost:3000/student/${user.email}?requesterEmail=${user.email}`,
+          `https://sc-hool-server.vercel.app/student/${user.email}?requesterEmail=${user.email}`,
           studentUpdateData
         );
       }

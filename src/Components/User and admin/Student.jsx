@@ -29,12 +29,12 @@ const Student = () => {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const userRes = await axios.get('http://localhost:3000/users', {
+      const userRes = await axios.get('https://sc-hool-server.vercel.app/users', {
         headers: { 'x-user-email': user?.email },
       });
       const filteredUsers = userRes.data.filter(user => user.role === 'student' && user.pending !== true);
 
-      const studentRes = await axios.get('http://localhost:3000/student/all', {
+      const studentRes = await axios.get('https://sc-hool-server.vercel.app/student/all', {
         headers: { 'x-user-email': user?.email },
       });
 
@@ -62,7 +62,7 @@ const Student = () => {
       return;
     }
     try {
-      const response = await axios.get('http://localhost:3000/classes', {
+      const response = await axios.get('https://sc-hool-server.vercel.app/classes', {
         headers: { 'x-user-email': user.email },
       });
       if (!Array.isArray(response.data)) {
@@ -85,7 +85,7 @@ const Student = () => {
   const updateStudent = async (email, updateData) => {
     try {
       const response = await axios.patch(
-        `http://localhost:3000/users/${email}?requesterEmail=${user.email}`,
+        `https://sc-hool-server.vercel.app/users/${email}?requesterEmail=${user.email}`,
         updateData,
         {
           headers: {
@@ -125,13 +125,15 @@ const Student = () => {
       });
 
       if (currentStudent.role === 'student') {
-        await axios.patch(`http://localhost:3000/student?email=${currentStudent.email}`, {
+        await axios.patch(`https://sc-hool-server.vercel.app/student/${currentStudent.email}?requesterEmail=${user.email}`, {
           name,
           registrationNumber,
           className,
         });
       } else {
-        await axios.delete(`http://localhost:3000/student?email=${currentStudent.email}`);
+        await axios.delete(`https://sc-hool-server.vercel.app/student?email=${currentStudent.email}&requesterEmail=${user.email}`, {
+          headers: { 'x-user-email': user.email },
+        });
       }
 
       await fetchStudents();
@@ -165,10 +167,17 @@ const Student = () => {
     if (result.isConfirmed) {
       try {
         setLoading(true);
-        await axios.delete(`http://localhost:3000/student?email=${student.email}`);
-        await axios.patch(`http://localhost:3000/users/remove-class/${student.email}`, {}, {
-          headers: { 'x-user-email': user.email },
+        const response = await axios.patch(`https://sc-hool-server.vercel.app/users/remove-class/${student.email}?requesterEmail=${user.email}`, {}, {
+          headers: { 
+            'x-user-email': user.email,
+            'Content-Type': 'application/json',
+          },
         });
+
+        if (!response.data.acknowledged || response.data.modifiedCount === 0) {
+          throw new Error('Failed to demote student to user.');
+        }
+
         setStudents(prev => prev.filter(s => s.email !== student.email));
         await MySwal.fire('Removed!', 'The student has been removed.', 'success');
       } catch (error) {
@@ -180,55 +189,49 @@ const Student = () => {
     }
   };
 
- // In Student.jsx, update the handleDeleteStudent function
-const handleDeleteStudent = async (email) => {
-  if (user?.role !== 'admin') {
-    await MySwal.fire('Error!', 'Only admins can delete students.', 'error');
-    return;
-  }
-
-  const result = await MySwal.fire({
-    title: 'Are you sure?',
-    text: 'This will permanently delete the student. This cannot be undone!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#2563eb',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, delete!',
-  });
-
-  if (result.isConfirmed) {
-    try {
-      setLoading(true);
-      await axios.delete(`http://localhost:3000/users/${email}`, {
-        headers: { 
-          'x-user-email': user.email,
-          'Content-Type': 'application/json'
-        },
-        params: {
-          requesterEmail: user.email
-        }
-      });
-      await axios.delete(`http://localhost:3000/student`, {
-        headers: { 
-          'x-user-email': user.email,
-          'Content-Type': 'application/json'
-        },
-        params: {
-          email: email,
-          requesterEmail: user.email
-        }
-      });
-      setStudents(prev => prev.filter(s => s.email !== email));
-      await MySwal.fire('Deleted!', 'The student has been removed.', 'success');
-    } catch (error) {
-      console.error('Error deleting student:', error);
-      await MySwal.fire('Error!', error.response?.data?.error || 'Failed to delete student.', 'error');
-    } finally {
-      setLoading(false);
+  const handleDeleteStudent = async (email) => {
+    if (user?.role !== 'admin') {
+      await MySwal.fire('Error!', 'Only admins can delete students.', 'error');
+      return;
     }
-  }
-};
+
+    const result = await MySwal.fire({
+      title: 'Are you sure?',
+      text: 'This will permanently delete the student. This cannot be undone!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete!',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        const response = await axios.delete(`https://sc-hool-server.vercel.app/users/${email}?requesterEmail=${user.email}`, {
+          headers: { 
+            'x-user-email': user.email,
+            'Content-Type': 'application/json',
+          },
+          params: {
+            requesterEmail: user.email,
+          },
+        });
+
+        if (!response.data.acknowledged || response.data.deletedCount === 0) {
+          throw new Error('Failed to delete student.');
+        }
+
+        setStudents(prev => prev.filter(s => s.email !== email));
+        await MySwal.fire('Deleted!', 'The student has been removed.', 'success');
+      } catch (error) {
+        console.error('Error deleting student:', error);
+        await MySwal.fire('Error!', error.response?.data?.error || 'Failed to delete student.', 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   const openUpdateModal = (student) => {
     if (user?.role !== 'admin') {
@@ -425,6 +428,7 @@ const handleDeleteStudent = async (email) => {
                 <p><strong>Registration:</strong> {selectedStudent.registrationNumber}</p>
                 <p><strong>Phone:</strong> {selectedStudent.phone || 'N/A'}</p>
                 <p><strong>Class:</strong> {selectedStudent.className}</p>
+                <p><strong>Group:</strong> {selectedStudent.stream}</p>
                 <p><strong>Joined:</strong> {new Date(selectedStudent.createdAt).toLocaleDateString()}</p>
               </div>
               <button

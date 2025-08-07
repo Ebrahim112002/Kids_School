@@ -40,7 +40,7 @@ const DashboardNav = () => {
     const fetchUserRole = async () => {
       if (user && user.email) {
         try {
-          const response = await axios.get('http://localhost:3000/users', {
+          const response = await axios.get('https://sc-hool-server.vercel.app/users', {
             params: { email: user.email }
           });
           const role = response.data.role || response.data[0]?.role || 'user';

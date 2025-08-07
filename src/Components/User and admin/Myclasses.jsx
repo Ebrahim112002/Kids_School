@@ -17,20 +17,18 @@ const Myclasses = () => {
           throw new Error('User email not available');
         }
 
-        // Fetch full user info with authentication header
-        const userRes = await axios.get(`http://localhost:3000/users/${user.email}`, {
-          headers: { 'x-user-email': user.email }
+        const userRes = await axios.get(`https://sc-hool-server.vercel.app/users/${user.email}`, {
+          headers: { 'x-user-email': user.email },
         });
         if (!userRes.data) {
           throw new Error('User not found');
         }
         setFullUser(userRes.data);
 
-        // If user is a teacher, fetch class info for assignedClasses
         if (userRes.data.role === 'teacher' && Array.isArray(userRes.data.assignedClasses) && userRes.data.assignedClasses.length > 0) {
           const classPromises = userRes.data.assignedClasses.map(cls =>
-            axios.get(`http://localhost:3000/classes/${cls.classId}`, {
-              headers: { 'x-user-email': user.email }
+            axios.get(`https://sc-hool-server.vercel.app/classes/${cls.classId}`, {
+              headers: { 'x-user-email': user.email },
             })
           );
           const classResponses = await Promise.all(classPromises);
@@ -119,8 +117,7 @@ const Myclasses = () => {
       className="p-6 max-w-4xl mx-auto bg-white shadow-md rounded-lg"
     >
       <h2 className="text-3xl font-bold mb-6 text-gray-800">My Class Information</h2>
-      <div className="space-y-4">
-        {/* Display teacher details */}
+      <div className="space-y-6">
         <div className="space-y-2">
           <p>
             <strong className="text-gray-700">Teacher Name:</strong> {fullUser.name || 'Not provided'}
@@ -137,43 +134,39 @@ const Myclasses = () => {
           <p>
             <strong className="text-gray-700">Shift:</strong> {fullUser.shift || 'Not specified'}
           </p>
-          <p>
-            <strong className="text-gray-700">Subjects:</strong>{' '}
-            {Array.isArray(fullUser.subjects) && fullUser.subjects.length > 0 
-              ? fullUser.subjects.join(', ') 
-              : 'Not specified'}
-          </p>
-          <p>
-            <strong className="text-gray-700">Assigned Classes:</strong>{' '}
-            {Array.isArray(fullUser.assignedClasses) && fullUser.assignedClasses.length > 0
-              ? fullUser.assignedClasses.map(cls => cls.className).join(', ')
-              : 'No classes assigned'}
-          </p>
-          <p>
-            <strong className="text-gray-700">Room Number:</strong> {fullUser.roomNumber || 'Not specified'}
-          </p>
-          <p>
-            <strong className="text-gray-700">Class Time:</strong> {fullUser.classTime || 'Not specified'}
-          </p>
-          <p>
-            <strong className="text-gray-700">Joined:</strong>{' '}
-            {fullUser.createdAt ? new Date(fullUser.createdAt).toLocaleDateString() : 'Not specified'}
-          </p>
         </div>
 
-        {/* Display class details (if available) */}
         {classesData.length > 0 && (
           <div className="mt-6">
             <h3 className="text-xl font-semibold mb-2 text-gray-800">Class Details</h3>
-            <ul className="space-y-2">
-              {classesData.map((cls, index) => (
-                <li key={index} className="border-b border-gray-200 pb-2">
-                  <p>
-                    <strong className="text-gray-700">Class Name:</strong> {cls.name || 'Not specified'}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="max-h-[calc(100vh-12rem)] overflow-y-auto pr-2">
+              {classesData.map((cls, index) => {
+                const classSubjects = Array.isArray(fullUser.subjects)
+                  ? fullUser.subjects.find(subj => subj.classId === cls._id)
+                  : null;
+                return (
+                  <div key={index} className="mb-4 p-4 bg-gray-50 rounded-md shadow-sm">
+                    <p>
+                      <strong className="text-gray-700">Class Name:</strong> {cls.name || 'Not specified'}
+                    </p>
+                    <p>
+                      <strong className="text-gray-700">Subjects:</strong>{' '}
+                      {classSubjects && Array.isArray(classSubjects.subjects) && classSubjects.subjects.length > 0
+                        ? classSubjects.subjects.join(', ')
+                        : 'Not specified'}
+                    </p>
+                    <p>
+                      <strong className="text-gray-700">Room Number:</strong>{' '}
+                      {classSubjects && classSubjects.roomNumber ? classSubjects.roomNumber : 'Not specified'}
+                    </p>
+                    <p>
+                      <strong className="text-gray-700">Class Time:</strong>{' '}
+                      {classSubjects && classSubjects.classTime ? classSubjects.classTime : 'Not specified'}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

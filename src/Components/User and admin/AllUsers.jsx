@@ -21,9 +21,9 @@ const AllUsers = () => {
   const [currentTeacher, setCurrentTeacher] = useState(null);
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [selectedShift, setSelectedShift] = useState('');
-  const [subjects, setSubjects] = useState('');
-  const [roomNumber, setRoomNumber] = useState('');
-  const [classTime, setClassTime] = useState('');
+  const [classSubjects, setClassSubjects] = useState({});
+  const [classRoomNumbers, setClassRoomNumbers] = useState({});
+  const [classTimes, setClassTimes] = useState({});
   const navigate = useNavigate();
 
   console.log('Authcontext user:', JSON.stringify(user, null, 2));
@@ -37,7 +37,7 @@ const AllUsers = () => {
         return;
       }
       try {
-        const response = await fetch('http://localhost:3000/classes', {
+        const response = await fetch('https://sc-hool-server.vercel.app/classes', {
           headers: {
             'x-user-email': user.email,
           },
@@ -64,7 +64,7 @@ const AllUsers = () => {
       if (!user?.email || users.length > 0) return;
       setFetchLoading(true);
       try {
-        const response = await fetch('http://localhost:3000/users', {
+        const response = await fetch('https://sc-hool-server.vercel.app/users', {
           headers: {
             'x-user-email': user.email,
           },
@@ -91,18 +91,18 @@ const AllUsers = () => {
 
   const filteredUsers = Array.isArray(users)
     ? users.filter(user =>
-        user.role === 'user' &&
-        user.pending !== true &&
-        (user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-         user.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+      user.role === 'user' &&
+      user.pending !== true &&
+      (user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
     : [];
   console.log('Filtered users:', filteredUsers);
 
   const updateUserRole = async (email, newRole, teacherData = null) => {
     setFetchLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/users/${email}?requesterEmail=${user.email}`, {
+      const response = await fetch(`https://sc-hool-server.vercel.app/users/${email}?requesterEmail=${user.email}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -114,8 +114,6 @@ const AllUsers = () => {
             assignedClasses: teacherData.assignedClasses,
             shift: teacherData.shift,
             subjects: teacherData.subjects,
-            roomNumber: teacherData.roomNumber,
-            classTime: teacherData.classTime,
           }),
         }),
       });
@@ -137,15 +135,78 @@ const AllUsers = () => {
     setCurrentTeacher(user);
     setSelectedClasses([]);
     setSelectedShift('');
-    setSubjects('');
-    setRoomNumber('');
-    setClassTime('');
+    setClassSubjects({});
+    setClassRoomNumbers({});
+    setClassTimes({});
     setTeacherModal(true);
   };
 
+  const handleClassSelection = (e) => {
+    const newSelectedClasses = Array.from(e.target.selectedOptions, option => option.value);
+    setSelectedClasses(newSelectedClasses);
+    setClassSubjects(prev => {
+      const updatedSubjects = { ...prev };
+      newSelectedClasses.forEach(classId => {
+        if (!updatedSubjects[classId]) updatedSubjects[classId] = '';
+      });
+      Object.keys(updatedSubjects).forEach(classId => {
+        if (!newSelectedClasses.includes(classId)) delete updatedSubjects[classId];
+      });
+      return updatedSubjects;
+    });
+    setClassRoomNumbers(prev => {
+      const updatedRooms = { ...prev };
+      newSelectedClasses.forEach(classId => {
+        if (!updatedRooms[classId]) updatedRooms[classId] = '';
+      });
+      Object.keys(updatedRooms).forEach(classId => {
+        if (!newSelectedClasses.includes(classId)) delete updatedRooms[classId];
+      });
+      return updatedRooms;
+    });
+    setClassTimes(prev => {
+      const updatedTimes = { ...prev };
+      newSelectedClasses.forEach(classId => {
+        if (!updatedTimes[classId]) updatedTimes[classId] = '';
+      });
+      Object.keys(updatedTimes).forEach(classId => {
+        if (!newSelectedClasses.includes(classId)) delete updatedTimes[classId];
+      });
+      return updatedTimes;
+    });
+  };
+
+  const handleSubjectChange = (classId, value) => {
+    setClassSubjects(prev => ({
+      ...prev,
+      [classId]: value,
+    }));
+  };
+
+  const handleRoomNumberChange = (classId, value) => {
+    setClassRoomNumbers(prev => ({
+      ...prev,
+      [classId]: value,
+    }));
+  };
+
+  const handleTimeChange = (classId, value) => {
+    setClassTimes(prev => ({
+      ...prev,
+      [classId]: value,
+    }));
+  };
+
   const handleMakeTeacher = async () => {
-    if (!selectedClasses.length || !selectedShift || !subjects || !roomNumber || !classTime) {
-      await MySwal.fire('Error!', 'Please select at least one class, a shift, enter subjects, a room number, and a class time.', 'error');
+    if (!selectedClasses.length || !selectedShift) {
+      await MySwal.fire('Error!', 'Please select at least one class and a shift.', 'error');
+      return;
+    }
+    const invalidClasses = selectedClasses.filter(
+      classId => !classSubjects[classId]?.trim() || !classRoomNumbers[classId]?.trim() || !classTimes[classId]?.trim()
+    );
+    if (invalidClasses.length > 0) {
+      await MySwal.fire('Error!', 'Please provide subjects, a room number, and a time for each selected class.', 'error');
       return;
     }
 
@@ -156,23 +217,24 @@ const AllUsers = () => {
           className: classes.find(c => c._id === classId)?.name,
         })),
         shift: selectedShift,
-        subjects: subjects.split(',').map(s => s.trim()).filter(s => s),
-        roomNumber,
-        classTime,
+        subjects: selectedClasses.map(classId => ({
+          classId,
+          className: classes.find(c => c._id === classId)?.name,
+          subjects: classSubjects[classId].split(',').map(s => s.trim()).filter(s => s),
+          roomNumber: classRoomNumbers[classId].trim(),
+          classTime: classTimes[classId].trim(),
+        })),
       };
 
       const result = await updateUserRole(currentTeacher.email, 'teacher', teacherData);
-
-      setUsers(users.filter(user => user._id !== currentTeacher._id)); // Remove from display since no longer 'user'
-
+      setUsers(users.filter(user => user._id !== currentTeacher._id));
       setTeacherModal(false);
       setSelectedClasses([]);
       setSelectedShift('');
-      setSubjects('');
-      setRoomNumber('');
-      setClassTime('');
-
-      await MySwal.fire('Success!', 'The user is now a teacher with assigned classes.', 'success');
+      setClassSubjects({});
+      setClassRoomNumbers({});
+      setClassTimes({});
+      await MySwal.fire('Success!', 'The user is now a teacher with assigned classes, subjects, rooms, and times.', 'success');
     } catch (error) {
       await MySwal.fire('Error!', error.message || 'Failed to update user role.', 'error');
     }
@@ -192,7 +254,7 @@ const AllUsers = () => {
     if (result.isConfirmed) {
       try {
         const result = await updateUserRole(email, 'admin');
-        setUsers(users.filter(user => user._id !== userId)); // Remove from display since no longer 'user'
+        setUsers(users.filter(user => user._id !== userId));
         await MySwal.fire('Success!', 'User is now an admin.', 'success');
       } catch (error) {
         await MySwal.fire('Error!', error.message || 'Failed to update user role.', 'error');
@@ -213,7 +275,7 @@ const AllUsers = () => {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetch(`http://localhost:3000/users/${email}?requesterEmail=${user.email}`, {
+        const response = await fetch(`https://sc-hool-server.vercel.app/users/${email}?requesterEmail=${user.email}`, {
           method: 'DELETE',
           headers: {
             'x-user-email': user.email,
@@ -425,115 +487,132 @@ const AllUsers = () => {
 
       {/* Make Teacher Modal */}
       {teacherModal && currentTeacher && (
-        <div className="fixed inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex justify-between items-start mb-4">
+        <div className="fixed inset-0 bg-black/20 bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto py-6">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 mx-auto my-6 max-h-[calc(100vh-3rem)] flex flex-col">
+            <div className="flex justify-between items-start mb-6">
               <h3 className="text-xl font-bold text-gray-800">Assign Teacher to Classes</h3>
               <button
                 onClick={() => {
                   setTeacherModal(false);
                   setSelectedClasses([]);
                   setSelectedShift('');
-                  setSubjects('');
-                  setRoomNumber('');
-                  setClassTime('');
+                  setClassSubjects({});
+                  setClassRoomNumbers({});
+                  setClassTimes({});
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 text-xl font-semibold"
               >
                 ×
               </button>
             </div>
-            <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <img
-                  src={currentTeacher.photoURL || 'https://via.placeholder.com/150'}
-                  alt={currentTeacher.name || 'User'}
-                  className="h-12 w-12 rounded-full object-cover mr-3"
-                />
-                <div>
-                  <h4 className="font-semibold">{currentTeacher.name || 'N/A'}</h4>
-                  <p className="text-gray-600 text-sm">{currentTeacher.email}</p>
+            <div className="flex-1 overflow-y-auto pr-2">
+              <div className="mb-6">
+                <div className="flex items-center mb-6 border-b pb-4">
+                  <img
+                    src={currentTeacher.photoURL || 'https://via.placeholder.com/150'}
+                    alt={currentTeacher.name || 'User'}
+                    className="h-12 w-12 rounded-full object-cover mr-3"
+                  />
+                  <div>
+                    <h4 className="font-semibold text-gray-800">{currentTeacher.name || 'N/A'}</h4>
+                    <p className="text-gray-600 text-sm">{currentTeacher.email}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Select Classes</label>
-                <select
-                  multiple
-                  value={selectedClasses}
-                  onChange={e => setSelectedClasses(Array.from(e.target.selectedOptions, option => option.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  {classes.map(cls => (
-                    <option key={cls._id} value={cls._id}>
-                      {cls.name}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple classes</p>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Select Shift</label>
-                <select
-                  value={selectedShift}
-                  onChange={e => setSelectedShift(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="">Select a shift</option>
-                  <option value="Morning">Morning</option>
-                  <option value="Afternoon">Afternoon</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Subjects (comma-separated)</label>
-                <input
-                  type="text"
-                  value={subjects}
-                  onChange={e => setSubjects(e.target.value)}
-                  placeholder="e.g., Math, Science, English"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
-                <input
-                  type="text"
-                  value={roomNumber}
-                  onChange={e => setRoomNumber(e.target.value)}
-                  placeholder="e.g., Room 101"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Class Time</label>
-                <input
-                  type="text"
-                  value={classTime}
-                  onChange={e => setClassTime(e.target.value)}
-                  placeholder="e.g., 9:00 AM - 10:00 AM"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    setTeacherModal(false);
-                    setSelectedClasses([]);
-                    setSelectedShift('');
-                    setSubjects('');
-                    setRoomNumber('');
-                    setClassTime('');
-                  }}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleMakeTeacher}
-                  disabled={!selectedClasses.length || !selectedShift || !subjects || !roomNumber || !classTime || fetchLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
-                >
-                  {fetchLoading ? 'Processing...' : 'Assign as Teacher'}
-                </button>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Classes</label>
+                  <select
+                    multiple
+                    value={selectedClasses}
+                    onChange={handleClassSelection}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    {classes.map(cls => (
+                      <option key={cls._id} value={cls._id}>
+                        {cls.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple classes</p>
+                </div>
+                {selectedClasses.length > 0 && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Details per Class</label>
+                    {selectedClasses.map(classId => (
+                      <div key={classId} className="mb-3 p-4 bg-gray-50 rounded-md shadow-sm">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                          {classes.find(c => c._id === classId)?.name && "Enter subjects (comma-separated) for this class " || 'Unknown Class'}
+                        </label>
+                        <input
+                          type="text"
+                          value={classSubjects[classId] || ''}
+                          onChange={e => handleSubjectChange(classId, e.target.value)}
+                          placeholder="e.g., Math, Science, English"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-2"
+                        />
+                        <p className="text-sm text-gray-500 mb-2">Enter room number for this class
+
+                        </p>
+                        <input
+                          type="text"
+                          value={classRoomNumbers[classId] || ''}
+                          onChange={e => handleRoomNumberChange(classId, e.target.value)}
+                          placeholder="e.g., Room 101"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 mb-2"
+                        />
+                        <p className="text-sm text-gray-500 mb-2">Class Time</p>
+                        <input
+                          type="text"
+                          value={classTimes[classId] || ''}
+                          onChange={e => handleTimeChange(classId, e.target.value)}
+                          placeholder="e.g., 9:00 AM - 10:00 AM"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">Enter class time (e.g., 9:00 AM - 10:00 AM)</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Shift</label>
+                  <select
+                    value={selectedShift}
+                    onChange={e => setSelectedShift(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Select a shift</option>
+                    <option value="Morning">Morning</option>
+                    <option value="Afternoon">Afternoon</option>
+                  </select>
+                </div>
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      setTeacherModal(false);
+                      setSelectedClasses([]);
+                      setSelectedShift('');
+                      setClassSubjects({});
+                      setClassRoomNumbers({});
+                      setClassTimes({});
+                    }}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleMakeTeacher}
+                    disabled={
+                      !selectedClasses.length ||
+                      !selectedShift ||
+                      fetchLoading ||
+                      selectedClasses.some(
+                        classId => !classSubjects[classId]?.trim() || !classRoomNumbers[classId]?.trim() || !classTimes[classId]?.trim()
+                      )
+                    }
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition disabled:opacity-50"
+                  >
+                    {fetchLoading ? 'Processing...' : 'Assign as Teacher'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
